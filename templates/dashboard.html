@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard – Social Sessions CRM</title>
+</head>
+<body>
+    <h1>CRM Dashboard</h1>
+    <button onclick="logout()">Logout</button>
+    <section id="lead-form">
+        <h2>Create New Lead</h2>
+        <input type="text" id="lead-name" placeholder="Name">
+        <input type="email" id="lead-email" placeholder="Email">
+        <input type="text" id="lead-phone" placeholder="Phone">
+        <input type="date" id="lead-followup">
+        <textarea id="lead-notes" placeholder="Notes"></textarea>
+        <button onclick="createLead()">Save Lead</button>
+    </section>
+    <section>
+        <h2>Leads</h2>
+        <ul id="lead-list"></ul>
+    </section>
+    <script>
+        async function logout() {
+            await fetch("/logout");
+            window.location.href = "/login";
+        }
+        async function fetchLeads() {
+            const res = await fetch("/leads");
+            const data = await res.json();
+            const list = document.getElementById("lead-list");
+            list.innerHTML = "";
+            data.forEach(lead => {
+                const item = document.createElement("li");
+                item.textContent = `${lead.name} – Follow-up: ${lead.follow_up_date || 'N/A'}`;
+                list.appendChild(item);
+            });
+        }
+        async function createLead() {
+            const payload = {
+                name: document.getElementById("lead-name").value,
+                email: document.getElementById("lead-email").value,
+                phone: document.getElementById("lead-phone").value,
+                follow_up_date: document.getElementById("lead-followup").value,
+                notes: document.getElementById("lead-notes").value
+            };
+            await fetch("/leads", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload)
+            });
+            fetchLeads();
+        }
+        fetchLeads();
+    </script>
+</body>
+</html>
