@@ -97,10 +97,12 @@ def create_lead():
     db.session.commit()
     return jsonify({'message': 'Lead created'})
 
-@app.before_first_request
+@app.before_request
 def create_tables():
-    with app.app_context():
-        db.create_all()
+    if not hasattr(app, '_tables_created'):
+        with app.app_context():
+            db.create_all()
+            app._tables_created = True
 
 
 if __name__ == '__main__':
