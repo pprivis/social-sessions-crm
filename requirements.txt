@@ -1,7 +1,0 @@
-Flask
-Flask-Login
-Flask-SQLAlchemy
-requests
-gunicorn
-psycopg2-binary
-werkzeug
