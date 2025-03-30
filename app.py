@@ -17,10 +17,12 @@ login_manager.login_view = "login_page"
 
 # Models
 class User(UserMixin, db.Model):
+__tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(100), unique=True, nullable=False)
     password_hash = db.Column(db.String(128), nullable=False)
-    role = db.Column(db.String(50), default='admin')
+    role = db.Column(db.String(50), default='viewer')
+
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
