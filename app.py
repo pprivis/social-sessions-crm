@@ -7,7 +7,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'fallback_secret')
-app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
@@ -67,9 +67,9 @@ def logout():
     return jsonify({'message': 'Logged out'})
 
 @app.route('/register', methods=['POST'])
-def register():
-    data = request.json
-    if User.query.filter_by(username=data['username']).first():
+def register(print("Received data:", request.get_json())
+    ):
+      if User.query.filter_by(username=data['username']).first():
         return jsonify({'error': 'Username already exists'}), 400
     user = User(username=data['username'], role=data.get('role', 'admin'))
     user.set_password(data['password'])
@@ -85,7 +85,7 @@ def dashboard():
 @app.route('/leads', methods=['POST'])
 @login_required
 def create_lead():
-    data = request.json
+  data = request.get_json(force=True)
     lead = Lead(
         name=data['name'],
         email=data['email'],
@@ -103,6 +103,4 @@ if __name__ == '__main__':
         db.create_all()
     app.run(debug=True)
 
-if __name__ == "__main__":
-    with app.app_context():
-        db.create_all()
+
