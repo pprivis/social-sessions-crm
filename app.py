@@ -67,15 +67,17 @@ def logout():
     return jsonify({'message': 'Logged out'})
 
 @app.route('/register', methods=['POST'])
-def register print("Received data:", request.get_json())
-    ):
-      if User.query.filter_by(username=data['username']).first():
+def register():
+    data = request.get_json(force=True)
+    print("Received data:", data)  # ✅ This is now inside the function
+    if User.query.filter_by(username=data['username']).first():
         return jsonify({'error': 'Username already exists'}), 400
     user = User(username=data['username'], role=data.get('role', 'admin'))
     user.set_password(data['password'])
     db.session.add(user)
     db.session.commit()
     return jsonify({'message': 'User registered successfully'})
+
 
 @app.route('/dashboard')
 @login_required
