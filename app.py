@@ -69,7 +69,7 @@ def logout():
 @app.route('/register', methods=['POST'])
 def register():
     data = request.get_json(force=True)
-    print("Received data:", data)  # ✅ This is now inside the function
+    print("Received data:", data)
     if User.query.filter_by(username=data['username']).first():
         return jsonify({'error': 'Username already exists'}), 400
     user = User(username=data['username'], role=data.get('role', 'admin'))
@@ -84,10 +84,11 @@ def register():
 def dashboard():
     return render_template("dashboard.html")
 
+
 @app.route('/leads', methods=['POST'])
 @login_required
 def create_lead():
-  data = request.get_json(force=True)
+    data = request.get_json(force=True)
     lead = Lead(
         name=data['name'],
         email=data['email'],
@@ -98,11 +99,3 @@ def create_lead():
     db.session.add(lead)
     db.session.commit()
     return jsonify({'message': 'Lead created'})
-
-
-if __name__ == '__main__':
-    with app.app_context():
-        db.create_all()
-    app.run(debug=True)
-
-
