@@ -8,31 +8,22 @@ import os
 
 app = Flask(__name__)
 
-# Securely set up your database URI
+# Secret key
+app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'fallback_secret')
+
+# Database URI setup with fallback and compatibility
 raw_uri = os.getenv(
     'DATABASE_URL',
     'postgresql://socialsessions_user:lB0zaiK1CLY5aX9qJWMMmTdcye1ulsfd@dpg-cvkogeidbo4c73f9fleg-a/socialsessions'
 )
 
-# Fix for compatibility if needed
 if raw_uri.startswith("postgres://"):
     raw_uri = raw_uri.replace("postgres://", "postgresql://", 1)
 
-# Configuration
 app.config['SQLALCHEMY_DATABASE_URI'] = raw_uri
-app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'changemefornow')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # Initialize extensions
-db = SQLAlchemy(app)
-migrate = Migrate(app, db)
-login_manager = LoginManager(app)
-login_manager.login_view = "login_page"
-
-
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
-# Init DB & Login
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 login_manager = LoginManager(app)
@@ -92,7 +83,6 @@ def logout():
 @app.route('/register', methods=['POST'])
 def register():
     data = request.get_json(force=True)
-    print("Received data:", data)
     if User.query.filter_by(username=data['username']).first():
         return jsonify({'error': 'Username already exists'}), 400
     user = User(username=data['username'], role=data.get('role', 'admin'))
@@ -126,16 +116,3 @@ if __name__ == "__main__":
     with app.app_context():
         db.create_all()
     app.run(debug=True)
-import os
-
-raw_uri = os.getenv(
-    'DATABASE_URL',
-    'postgresql://socialsessions_user:lB0zaiK1CLY5aX9qJWMMmTdcye1ulsfd@dpg-cvkogeidbo4c73f9fleg-a/socialsessions'
-)
-
-# Replace postgres:// with postgresql:// if necessary
-if raw_uri.startswith("postgres://"):
-    raw_uri = raw_uri.replace("postgres://", "postgresql://", 1)
-    
-app.config['SQLALCHEMY_DATABASE_URI'] = raw_uri
-
