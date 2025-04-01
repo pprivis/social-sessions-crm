@@ -1,24 +1,26 @@
-from flask import Flask
+from flask import Flask, request, jsonify, render_template, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
+from flask_login import LoginManager, login_user, logout_user, login_required, UserMixin
+from werkzeug.security import generate_password_hash, check_password_hash
+from datetime import datetime
+import os
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'https://social-sessions-crm.onrender.com'
 
+# Configurations
+app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'fallback_secret')
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv(
+    'DATABASE_URL',
+    'postgresql://socialsessions_user:lB0zaiK1CLY5aX9qJWMMmTdcye1ulsfd@dpg-cvkogeidbo4c73f9fleg-a.render.com/socialsessions'
+)
+
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+# Init DB & Login
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
-
-# Define your models here
-
-
-app = Flask(__name__)
-app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'fallback_secret')
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL')
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-db = SQLAlchemy(app)
-
-login_manager = LoginManager()
-login_manager.init_app(app)
+login_manager = LoginManager(app)
 login_manager.login_view = "login_page"
 
 # Models
@@ -28,7 +30,6 @@ class User(UserMixin, db.Model):
     username = db.Column(db.String(100), unique=True, nullable=False)
     password_hash = db.Column(db.String(128), nullable=False)
     role = db.Column(db.String(50), default='viewer')
-
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -49,6 +50,7 @@ class Lead(db.Model):
 def load_user(user_id):
     return User.query.get(int(user_id))
 
+# Routes
 @app.route('/')
 def index():
     return redirect(url_for('login_page'))
@@ -84,12 +86,10 @@ def register():
     db.session.commit()
     return jsonify({'message': 'User registered successfully'})
 
-
 @app.route('/dashboard')
 @login_required
 def dashboard():
     return render_template("dashboard.html")
-
 
 @app.route('/leads', methods=['POST'])
 @login_required
@@ -105,3 +105,22 @@ def create_lead():
     db.session.add(lead)
     db.session.commit()
     return jsonify({'message': 'Lead created'})
+
+# Run locally
+if __name__ == "__main__":
+    with app.app_context():
+        db.create_all()
+    app.run(debug=True)
+import os
+
+raw_uri = os.getenv(
+    'DATABASE_URL',
+    'postgresql://socialsessions_user:lB0zaiK1CLY5aX9qJWMMmTdcye1ulsfd@dpg-cvkogeidbo4c73f9fleg-a/socialsessions'
+)
+
+# Replace postgres:// with postgresql:// if necessary
+if raw_uri.startswith("postgres://"):
+    raw_uri = raw_uri.replace("postgres://", "postgresql://", 1)
+    
+app.config['SQLALCHEMY_DATABASE_URI'] = raw_uri
+
