@@ -8,12 +8,27 @@ import os
 
 app = Flask(__name__)
 
-# Configurations
-app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'fallback_secret')
-app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv(
+# Securely set up your database URI
+raw_uri = os.getenv(
     'DATABASE_URL',
-    'postgresql://socialsessions_user:lB0zaiK1CLY5aX9qJWMMmTdcye1ulsfd@dpg-cvkogeidbo4c73f9fleg-a.render.com/socialsessions'
+    'postgresql://socialsessions_user:lB0zaiK1CLY5aX9qJWMMmTdcye1ulsfd@dpg-cvkogeidbo4c73f9fleg-a/socialsessions'
 )
+
+# Fix for compatibility if needed
+if raw_uri.startswith("postgres://"):
+    raw_uri = raw_uri.replace("postgres://", "postgresql://", 1)
+
+# Configuration
+app.config['SQLALCHEMY_DATABASE_URI'] = raw_uri
+app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'changemefornow')
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+# Initialize extensions
+db = SQLAlchemy(app)
+migrate = Migrate(app, db)
+login_manager = LoginManager(app)
+login_manager.login_view = "login_page"
+
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
