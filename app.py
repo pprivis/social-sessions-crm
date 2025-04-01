@@ -1,9 +1,15 @@
-from flask import Flask, request, jsonify, redirect, url_for, render_template
+from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
-from flask_login import LoginManager, login_user, logout_user, login_required, current_user, UserMixin
-from datetime import datetime
-import os
-from werkzeug.security import generate_password_hash, check_password_hash
+from flask_migrate import Migrate
+
+app = Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'https://social-sessions-crm.onrender.com'
+
+db = SQLAlchemy(app)
+migrate = Migrate(app, db)
+
+# Define your models here
+
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'fallback_secret')
